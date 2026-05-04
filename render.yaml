@@ -1,8 +1,9 @@
 services:
   - type: web
     name: pathvancer-chatbot
-    runtime: python311
-    startCommand: "pip install -r requirements.txt && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    runtime: docker
+    dockerfilePath: ./agentic_chatbot/Dockerfile
+    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: OPENROUTER_API_KEY
         sync: false
