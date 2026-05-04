@@ -3,6 +3,11 @@
 .env.local
 .env.*.local
 
+# Google Service Account (SENSITIVE - never commit)
+google_service_account.json
+*-service-account*.json
+*-gcp-*.json
+
 # Python
 __pycache__/
 *.py[cod]
