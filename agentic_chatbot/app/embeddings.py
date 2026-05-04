@@ -1,8 +1,7 @@
 import hashlib
-import requests
-import json
 from typing import List, Optional
 import logging
+from sentence_transformers import SentenceTransformer
 
 logger = logging.getLogger(__name__)
 
@@ -32,17 +31,28 @@ class EmbeddingCache:
         self.cache.clear()
 
 class EmbeddingService:
-    """Service for generating text embeddings using OpenRouter API"""
+    """Service for generating text embeddings using local sentence-transformers"""
     
-    def __init__(self, api_key: str, model: str = "openai/text-embedding-3-small"):
-        self.api_key = api_key
-        self.model = model
-        self.base_url = "https://openrouter.io/api/v1"
+    def __init__(self, api_key: str = None, model: str = "all-MiniLM-L6-v2"):
+        """
+        Initialize embedding service with local model
+        
+        Args:
+            api_key: Unused (for compatibility), OpenRouter doesn't support embeddings
+            model: Sentence-transformers model name
+        """
+        self.model_name = model
         self.cache = EmbeddingCache()
+        try:
+            self.model = SentenceTransformer(model)
+            logger.info(f"✓ Loaded embedding model: {model}")
+        except Exception as e:
+            logger.error(f"Failed to load embedding model: {e}")
+            self.model = None
     
     def get_embedding(self, text: str) -> Optional[List[float]]:
         """
-        Get embedding for text using OpenRouter API
+        Get embedding for text using local sentence-transformers
         
         Args:
             text: Text to embed
@@ -53,39 +63,22 @@ class EmbeddingService:
         if not text or not text.strip():
             return None
         
+        if not self.model:
+            return None
+        
         # Check cache first
         cached = self.cache.get(text)
         if cached:
             return cached
         
         try:
-            response = requests.post(
-                f"{self.base_url}/embeddings",
-                headers={
-                    "Authorization": f"Bearer {self.api_key}",
-                    "HTTP-Referer": "https://pathvancer.com",
-                    "X-Title": "PathVancer Chatbot"
-                },
-                json={
-                    "model": self.model,
-                    "input": text.strip()
-                },
-                timeout=30
-            )
-            
-            response.raise_for_status()
-            data = response.json()
-            
-            embedding = data["data"][0]["embedding"]
+            embedding = self.model.encode(text.strip()).tolist()
             
             # Cache the result
             self.cache.set(text, embedding)
             
             return embedding
         
-        except requests.exceptions.RequestException as e:
-            logger.error(f"OpenRouter API error: {e}")
-            return None
         except Exception as e:
             logger.error(f"Error generating embedding: {e}")
             return None
@@ -141,11 +134,11 @@ class EmbeddingService:
 # Global embedding service instance
 embedding_service: Optional[EmbeddingService] = None
 
-def init_embedding_service(api_key: str):
-    """Initialize the embedding service"""
+def init_embedding_service(api_key: str = None):
+    """Initialize the embedding service with local model"""
     global embedding_service
     embedding_service = EmbeddingService(api_key)
-    logger.info("✓ Embedding service initialized (OpenRouter)")
+    logger.info("✓ Embedding service initialized (Local: sentence-transformers)")
 
 def get_embedding_service() -> Optional[EmbeddingService]:
     """Get the embedding service instance"""
