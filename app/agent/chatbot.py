@@ -4,7 +4,7 @@ Chatbot Agent Implementation using LangChain
 Main orchestrator for conversation flow
 """
 
-from langchain.agents import AgentExecutor, create_tool_calling_agent
+from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import HumanMessage, AIMessage
@@ -58,7 +58,7 @@ If you don't have information, direct them to: info@pathvancer.com"""),
             MessagesPlaceholder(variable_name="agent_scratchpad"),
         ])
         
-        self.agent = create_tool_calling_agent(
+        self.agent = create_openai_tools_agent(
             self.llm,
             CHATBOT_TOOLS,
             self.prompt
