@@ -1,0 +1,30 @@
+version: '3.9'
+
+services:
+  chatbot:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=false
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=gpt-3.5-turbo
+      - REDIS_ENABLED=true
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+    networks:
+      - chatbot-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - chatbot-network
+    restart: unless-stopped
+
+networks:
+  chatbot-network:
+    driver: bridge

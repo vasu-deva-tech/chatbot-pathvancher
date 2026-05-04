@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: pathvancer-chatbot
+    runtime: python311
+    startCommand: "pip install -r requirements.txt && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: OPENROUTER_BASE_URL
+        value: https://openrouter.io/api/v1
+      - key: LLM_MODEL
+        value: openai/gpt-3.5-turbo
+      - key: EMBEDDING_MODEL
+        value: openai/text-embedding-3-small
+      - key: SESSION_TIMEOUT
+        value: "3600"
+      - key: MAX_CONTEXT_HISTORY
+        value: "10"
+      - key: ENVIRONMENT
+        value: production
+      - key: LOG_LEVEL
+        value: INFO
